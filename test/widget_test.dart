@@ -41,4 +41,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Календарь'), findsOneWidget);
   });
+
+  testWidgets('тема: как на устройстве, светлая, тёмная', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final store = await AppStore.load();
+    await tester.pumpWidget(SalaryApp(store: store));
+    await tester.pumpAndSettle();
+    ThemeMode mode() =>
+        tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode!;
+    expect(mode(), ThemeMode.system);
+
+    await tester.tap(find.text('Account'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dark'));
+    await tester.pumpAndSettle();
+    expect(store.profile.theme, 'dark');
+    expect(mode(), ThemeMode.dark);
+    expect(
+      Theme.of(tester.element(find.text('Dark'))).brightness,
+      Brightness.dark,
+    );
+
+    await tester.tap(find.text('Light'));
+    await tester.pumpAndSettle();
+    expect(mode(), ThemeMode.light);
+  });
 }

@@ -15,6 +15,7 @@ class Profile {
     this.hourlyRate = 0,
     this.periodStartDay = defaultPeriodStartDay,
     this.language = defaultLanguage,
+    this.theme = defaultTheme,
   });
 
   /// Варианты начала расчётного периода: календарный месяц или с 20 по 19.
@@ -23,6 +24,10 @@ class Profile {
 
   static const languages = ['en', 'he', 'ru'];
   static const defaultLanguage = 'en';
+
+  /// Тема: как на устройстве, светлая или тёмная.
+  static const themes = ['system', 'light', 'dark'];
+  static const defaultTheme = 'system';
 
   final String name;
   final double hourlyRate;
@@ -33,16 +38,21 @@ class Profile {
   /// Язык интерфейса: 'en', 'he' или 'ru'.
   final String language;
 
+  /// Тема оформления: 'system', 'light' или 'dark'.
+  final String theme;
+
   Profile copyWith({
     String? name,
     double? hourlyRate,
     int? periodStartDay,
     String? language,
+    String? theme,
   }) => Profile(
     name: name ?? this.name,
     hourlyRate: hourlyRate ?? this.hourlyRate,
     periodStartDay: periodStartDay ?? this.periodStartDay,
     language: language ?? this.language,
+    theme: theme ?? this.theme,
   );
 
   Map<String, Object> toJson() => {
@@ -50,13 +60,15 @@ class Profile {
     'hourlyRate': hourlyRate,
     'periodStartDay': periodStartDay,
     'language': language,
+    'theme': theme,
   };
 
   /// Старое поле currency игнорируется; недопустимые значения
-  /// периода и языка заменяются значениями по умолчанию.
+  /// периода, языка и темы заменяются значениями по умолчанию.
   factory Profile.fromJson(Map<String, dynamic> json) {
     final day = json['periodStartDay'];
     final language = json['language'];
+    final theme = json['theme'];
     return Profile(
       name: (json['name'] as String?) ?? '',
       hourlyRate: ((json['hourlyRate'] as num?) ?? 0).toDouble(),
@@ -66,6 +78,7 @@ class Profile {
       language: languages.contains(language)
           ? language as String
           : defaultLanguage,
+      theme: themes.contains(theme) ? theme as String : defaultTheme,
     );
   }
 }

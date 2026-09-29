@@ -38,6 +38,11 @@ class SalaryApp extends StatelessWidget {
           AppLocalizations.delegate,
           ...GlobalMaterialLocalizations.delegates,
         ],
+        themeMode: switch (store.profile.theme) {
+          'light' => ThemeMode.light,
+          'dark' => ThemeMode.dark,
+          _ => ThemeMode.system,
+        },
         theme: ThemeData(colorSchemeSeed: seed, useMaterial3: true),
         darkTheme: ThemeData(
           colorSchemeSeed: seed,

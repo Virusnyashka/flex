@@ -15,6 +15,7 @@ void main() {
         hourlyRate: 55.5,
         periodStartDay: 1,
         language: 'he',
+        theme: 'dark',
       ),
     );
     await source.saveShift(source.newShift(DateTime(2026, 9, 27)));
@@ -29,6 +30,7 @@ void main() {
     expect(target.profile.hourlyRate, 55.5);
     expect(target.profile.periodStartDay, 1);
     expect(target.profile.language, 'he');
+    expect(target.profile.theme, 'dark');
     expect(target.shiftOn(DateTime(2026, 9, 28))!.type, ShiftType.night);
 
     // После перезапуска данные на месте.
@@ -48,6 +50,7 @@ void main() {
     final store = await AppStore.load();
     expect(store.profile.language, 'en');
     expect(store.profile.periodStartDay, 20);
+    expect(store.profile.theme, 'system');
     expect(jsonDecode(store.exportJson())['profile']['language'], 'en');
   });
 
@@ -94,5 +97,7 @@ void main() {
   test('неизвестный язык в данных заменяется английским', () {
     expect(Profile.fromJson({'language': 'fr'}).language, 'en');
     expect(Profile.fromJson({'language': 'ru'}).language, 'ru');
+    expect(Profile.fromJson({'theme': 'sepia'}).theme, 'system');
+    expect(Profile.fromJson({}).theme, 'system');
   });
 }

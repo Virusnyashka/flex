@@ -247,6 +247,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         profile.copyWith(language: language),
                       ),
                     ),
+                    _ChoiceTile<String>(
+                      icon: Icons.brightness_6_outlined,
+                      title: l.themeLabel,
+                      selected: profile.theme,
+                      options: {
+                        'system': l.themeSystem,
+                        'light': l.themeLight,
+                        'dark': l.themeDark,
+                      },
+                      onChanged: (theme) => widget.store.updateProfile(
+                        profile.copyWith(theme: theme),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -323,10 +336,12 @@ class _ChoiceTile<T> extends StatelessWidget {
               for (final MapEntry(:key, :value) in options.entries)
                 ButtonSegment(
                   value: key,
-                  // Длинные подписи (например, на иврите) ужимаются.
-                  label: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(value, maxLines: 1),
+                  // Длинные подписи переносятся на вторую строку.
+                  label: Text(
+                    value,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
             ],
