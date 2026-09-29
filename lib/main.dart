@@ -27,23 +27,11 @@ class SalaryApp extends StatelessWidget {
       locale: const Locale('ru'),
       supportedLocales: const [Locale('ru')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      // Шапка не меняет цвет при прокрутке — на iPhone она сливается
-      // со строкой состояния (см. web/index.html). В светлой теме шапка
-      // бирюзовая: часы iPhone над ней белые и иначе не были бы видны.
-      theme: ThemeData(
-        colorSchemeSeed: seed,
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: seed,
-          foregroundColor: Colors.white,
-          scrolledUnderElevation: 0,
-        ),
-      ),
+      theme: ThemeData(colorSchemeSeed: seed, useMaterial3: true),
       darkTheme: ThemeData(
         colorSchemeSeed: seed,
         brightness: Brightness.dark,
         useMaterial3: true,
-        appBarTheme: const AppBarTheme(scrolledUnderElevation: 0),
       ),
       home: HomePage(store: store),
     );

@@ -101,8 +101,8 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: "assets/icon/icon.png"
-    background_color: "#0e1513"
-    theme_color: "#0e1513"
+    background_color: "#ffffff"
+    theme_color: "#155CED"
   macos:
     generate: true
     image_path: "assets/icon/icon_macos.png"

@@ -3,15 +3,7 @@
 
 // Встроенный service worker Flutter устарел — используем свой sw.js,
 // который кеширует всё приложение для работы без интернета.
-_flutter.loader.load({
-  onEntrypointLoaded: async (engineInitializer) => {
-    // Встраиваем в #app, чтобы учитывать вырез экрана и полоску «Домой».
-    const appRunner = await engineInitializer.initializeEngine({
-      hostElement: document.querySelector('#app'),
-    });
-    await appRunner.runApp();
-  },
-});
+_flutter.loader.load();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
