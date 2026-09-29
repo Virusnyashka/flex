@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../data/app_store.dart';
+import '../data/backup_file.dart';
 import '../l10n/app_localizations.dart';
 import '../logic/pay_period.dart';
+import '../models/shift.dart';
 import '../logic/period_report.dart';
 import '../widgets/format.dart';
 import '../widgets/step_switcher.dart';
@@ -62,31 +63,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _export() async {
     final l = AppLocalizations.of(context);
-    final json = widget.store.exportJson();
-    await Clipboard.setData(ClipboardData(text: json));
-    if (!mounted) return;
-    await showDialog<void>(
+    final messenger = ScaffoldMessenger.of(context);
+    final fileName = 'flex-backup-${Shift.dateKeyOf(DateTime.now())}.json';
+    // Без await до сохранения: браузер разрешает его только по нажатию.
+    final saved = await saveBackupFile(fileName, widget.store.exportJson());
+    if (saved) {
+      messenger.showSnackBar(SnackBar(content: Text(l.backupSaved(fileName))));
+    }
+  }
+
+  Future<void> _importFile() async {
+    final l = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l.backupCopiedTitle),
-        content: Text(l.backupCopiedBody),
+        title: Text(l.backupRestore),
+        content: Text(l.restoreConfirmBody),
         actions: [
-          FilledButton(
+          TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l.gotIt),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l.chooseFile),
           ),
         ],
       ),
     );
+    if (confirmed != true) return;
+    final text = await pickBackupFile();
+    if (text != null) await _restore(text);
   }
 
-  Future<void> _import() async {
+  Future<void> _importText() async {
     final l = AppLocalizations.of(context);
     final controller = TextEditingController();
     final text = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l.backupRestore),
+        title: Text(l.backupRestoreText),
         content: TextField(
           controller: controller,
           maxLines: 6,
@@ -107,7 +123,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
-    if (text == null || text.trim().isEmpty || !mounted) return;
+    if (text != null) await _restore(text);
+  }
+
+  Future<void> _restore(String text) async {
+    if (text.trim().isEmpty || !mounted) return;
+    final l = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     try {
       final count = await widget.store.importJson(text.trim());
@@ -253,7 +274,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       leading: const Icon(Icons.download_outlined),
                       title: Text(l.backupRestore),
                       subtitle: Text(l.backupRestoreSubtitle),
-                      onTap: _import,
+                      onTap: _importFile,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.content_paste_outlined),
+                      title: Text(l.backupRestoreText),
+                      subtitle: Text(l.backupRestoreTextSubtitle),
+                      onTap: _importText,
                     ),
                   ],
                 ),

@@ -148,12 +148,6 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get delete;
 
-  /// No description provided for @gotIt.
-  ///
-  /// In en, this message translates to:
-  /// **'Got it'**
-  String get gotIt;
-
   /// No description provided for @shiftMorning.
   ///
   /// In en, this message translates to:
@@ -325,13 +319,13 @@ abstract class AppLocalizations {
   /// No description provided for @backupSaveSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Copies all shifts and settings'**
+  /// **'A file with all shifts and settings'**
   String get backupSaveSubtitle;
 
   /// No description provided for @backupRestore.
   ///
   /// In en, this message translates to:
-  /// **'Restore from backup'**
+  /// **'Restore from a file'**
   String get backupRestore;
 
   /// No description provided for @backupRestoreSubtitle.
@@ -340,17 +334,35 @@ abstract class AppLocalizations {
   /// **'Replaces the current data'**
   String get backupRestoreSubtitle;
 
-  /// No description provided for @backupCopiedTitle.
+  /// No description provided for @backupRestoreText.
   ///
   /// In en, this message translates to:
-  /// **'Backup copied'**
-  String get backupCopiedTitle;
+  /// **'Restore from text'**
+  String get backupRestoreText;
 
-  /// No description provided for @backupCopiedBody.
+  /// No description provided for @backupRestoreTextSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'The data has been copied to the clipboard. Paste it into Notes or send it to yourself in a message so you don\'t lose it.'**
-  String get backupCopiedBody;
+  /// **'For older backups pasted into Notes'**
+  String get backupRestoreTextSubtitle;
+
+  /// No description provided for @restoreConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current shifts and settings will be replaced with the data from the file.'**
+  String get restoreConfirmBody;
+
+  /// No description provided for @chooseFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose file'**
+  String get chooseFile;
+
+  /// No description provided for @backupSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved: {file}'**
+  String backupSaved(String file);
 
   /// No description provided for @restoreHint.
   ///

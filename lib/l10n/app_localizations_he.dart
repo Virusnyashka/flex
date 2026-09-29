@@ -34,9 +34,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get delete => 'מחיקה';
 
   @override
-  String get gotIt => 'הבנתי';
-
-  @override
   String get shiftMorning => 'משמרת בוקר';
 
   @override
@@ -133,20 +130,31 @@ class AppLocalizationsHe extends AppLocalizations {
   String get backupSave => 'שמירת גיבוי';
 
   @override
-  String get backupSaveSubtitle => 'מעתיק את כל המשמרות וההגדרות';
+  String get backupSaveSubtitle => 'קובץ עם כל המשמרות וההגדרות';
 
   @override
-  String get backupRestore => 'שחזור מגיבוי';
+  String get backupRestore => 'שחזור מקובץ';
 
   @override
   String get backupRestoreSubtitle => 'מחליף את הנתונים הנוכחיים';
 
   @override
-  String get backupCopiedTitle => 'הגיבוי הועתק';
+  String get backupRestoreText => 'שחזור מטקסט';
 
   @override
-  String get backupCopiedBody =>
-      'הנתונים הועתקו ללוח. הדביקו אותם בפתקים או שלחו לעצמכם בהודעה כדי לא לאבד אותם.';
+  String get backupRestoreTextSubtitle => 'לגיבויים ישנים שהודבקו בפתקים';
+
+  @override
+  String get restoreConfirmBody =>
+      'המשמרות וההגדרות הנוכחיות יוחלפו בנתונים מהקובץ.';
+
+  @override
+  String get chooseFile => 'בחירת קובץ';
+
+  @override
+  String backupSaved(String file) {
+    return 'נשמר: $file';
+  }
 
   @override
   String get restoreHint => 'הדביקו כאן את טקסט הגיבוי';

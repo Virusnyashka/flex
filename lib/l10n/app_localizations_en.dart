@@ -34,9 +34,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
-  String get gotIt => 'Got it';
-
-  @override
   String get shiftMorning => 'Morning shift';
 
   @override
@@ -133,20 +130,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupSave => 'Save a backup';
 
   @override
-  String get backupSaveSubtitle => 'Copies all shifts and settings';
+  String get backupSaveSubtitle => 'A file with all shifts and settings';
 
   @override
-  String get backupRestore => 'Restore from backup';
+  String get backupRestore => 'Restore from a file';
 
   @override
   String get backupRestoreSubtitle => 'Replaces the current data';
 
   @override
-  String get backupCopiedTitle => 'Backup copied';
+  String get backupRestoreText => 'Restore from text';
 
   @override
-  String get backupCopiedBody =>
-      'The data has been copied to the clipboard. Paste it into Notes or send it to yourself in a message so you don\'t lose it.';
+  String get backupRestoreTextSubtitle => 'For older backups pasted into Notes';
+
+  @override
+  String get restoreConfirmBody =>
+      'Your current shifts and settings will be replaced with the data from the file.';
+
+  @override
+  String get chooseFile => 'Choose file';
+
+  @override
+  String backupSaved(String file) {
+    return 'Saved: $file';
+  }
 
   @override
   String get restoreHint => 'Paste the backup text here';

@@ -34,9 +34,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get delete => 'Удалить';
 
   @override
-  String get gotIt => 'Понятно';
-
-  @override
   String get shiftMorning => 'Утренняя смена';
 
   @override
@@ -135,20 +132,32 @@ class AppLocalizationsRu extends AppLocalizations {
   String get backupSave => 'Сохранить резервную копию';
 
   @override
-  String get backupSaveSubtitle => 'Копирует все смены и настройки';
+  String get backupSaveSubtitle => 'Файл со всеми сменами и настройками';
 
   @override
-  String get backupRestore => 'Восстановить из копии';
+  String get backupRestore => 'Восстановить из файла';
 
   @override
   String get backupRestoreSubtitle => 'Заменяет текущие данные';
 
   @override
-  String get backupCopiedTitle => 'Копия скопирована';
+  String get backupRestoreText => 'Восстановить из текста';
 
   @override
-  String get backupCopiedBody =>
-      'Данные скопированы в буфер обмена. Вставьте их в Заметки или отправьте себе в сообщении, чтобы не потерять.';
+  String get backupRestoreTextSubtitle =>
+      'Для старых копий, вставленных в Заметки';
+
+  @override
+  String get restoreConfirmBody =>
+      'Текущие смены и настройки будут заменены данными из файла.';
+
+  @override
+  String get chooseFile => 'Выбрать файл';
+
+  @override
+  String backupSaved(String file) {
+    return 'Сохранено: $file';
+  }
 
   @override
   String get restoreHint => 'Вставьте сюда текст резервной копии';
