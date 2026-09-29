@@ -53,6 +53,8 @@ void main() {
 
     await tester.tap(find.text('Account'));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Dark'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
     expect(store.profile.theme, 'dark');
@@ -62,6 +64,8 @@ void main() {
       Brightness.dark,
     );
 
+    await tester.ensureVisible(find.text('Light'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Light'));
     await tester.pumpAndSettle();
     expect(mode(), ThemeMode.light);
