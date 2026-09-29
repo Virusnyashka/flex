@@ -1,6 +1,6 @@
 {
-    "name": "Моя зарплата Flex",
-    "short_name": "Зарплата Flex",
+    "name": "FLEX",
+    "short_name": "FLEX",
     "start_url": ".",
     "scope": ".",
     "display": "standalone",
