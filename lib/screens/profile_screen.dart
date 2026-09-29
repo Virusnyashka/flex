@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../data/app_store.dart';
+import '../l10n/app_localizations.dart';
+import '../logic/pay_period.dart';
 import '../logic/period_report.dart';
 import '../widgets/format.dart';
 import '../widgets/step_switcher.dart';
@@ -28,6 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required void Function(String) onSave,
     String? suffix,
   }) async {
+    final l = AppLocalizations.of(context);
     final controller = TextEditingController(text: initial);
     final result = await showDialog<String>(
       context: context,
@@ -45,11 +48,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Сохранить'),
+            child: Text(l.save),
           ),
         ],
       ),
@@ -58,21 +61,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _export() async {
+    final l = AppLocalizations.of(context);
     final json = widget.store.exportJson();
     await Clipboard.setData(ClipboardData(text: json));
     if (!mounted) return;
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Копия скопирована'),
-        content: const Text(
-          'Данные скопированы в буфер обмена. Вставьте их в Заметки '
-          'или отправьте себе в сообщении, чтобы не потерять.',
-        ),
+        title: Text(l.backupCopiedTitle),
+        content: Text(l.backupCopiedBody),
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Понятно'),
+            child: Text(l.gotIt),
           ),
         ],
       ),
@@ -80,27 +81,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _import() async {
+    final l = AppLocalizations.of(context);
     final controller = TextEditingController();
     final text = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Восстановить из копии'),
+        title: Text(l.backupRestore),
         content: TextField(
           controller: controller,
           maxLines: 6,
-          decoration: const InputDecoration(
-            hintText: 'Вставьте сюда текст резервной копии',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: l.restoreHint,
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Восстановить'),
+            child: Text(l.restoreAction),
           ),
         ],
       ),
@@ -109,12 +111,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       final count = await widget.store.importJson(text.trim());
+      // После восстановления мог смениться язык — берём строки заново.
+      if (!mounted) return;
+      final restored = AppLocalizations.of(context);
       messenger.showSnackBar(
-        SnackBar(content: Text('Восстановлено: ${shiftsCount(count)}')),
+        SnackBar(
+          content: Text(restored.restoredCount(restored.shiftsCount(count))),
+        ),
       );
-    } on FormatException catch (e) {
+    } on BackupFormatException catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Не получилось: ${e.message}')),
+        SnackBar(
+          content: Text(
+            e.wrongApp ? l.restoreFailedWrongApp : l.restoreFailedUnreadable,
+          ),
+        ),
       );
     }
   }
@@ -123,8 +134,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Личный кабинет')),
+      appBar: AppBar(title: Text(l.profileTitle)),
       body: ListenableBuilder(
         listenable: widget.store,
         builder: (context, _) {
@@ -144,13 +156,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     ListTile(
                       leading: const Icon(Icons.badge_outlined),
-                      title: const Text('Имя'),
+                      title: Text(l.nameLabel),
                       subtitle: Text(
-                        profile.name.isEmpty ? 'не указано' : profile.name,
+                        profile.name.isEmpty ? l.notSpecified : profile.name,
                       ),
                       trailing: const Icon(Icons.edit_outlined),
                       onTap: () => _editText(
-                        title: 'Имя',
+                        title: l.nameLabel,
                         initial: profile.name,
                         numeric: false,
                         onSave: (v) => widget.store.updateProfile(
@@ -160,20 +172,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.payments_outlined),
-                      title: const Text('Часовая ставка (100%)'),
+                      title: Text(l.hourlyRateLabel),
                       subtitle: Text(
                         profile.hourlyRate > 0
-                            ? formatMoney(profile.hourlyRate, profile.currency)
-                            : 'не указана — нажмите, чтобы указать',
+                            ? formatMoney(l, profile.hourlyRate)
+                            : l.rateNotSet,
                       ),
                       trailing: const Icon(Icons.edit_outlined),
                       onTap: () => _editText(
-                        title: 'Часовая ставка',
+                        title: l.hourlyRateDialogTitle,
                         initial: profile.hourlyRate > 0
                             ? NumberFormat('0.##').format(profile.hourlyRate)
                             : '',
                         numeric: true,
-                        suffix: profile.currency,
+                        suffix: '₪',
                         onSave: (v) {
                           final rate = _parseNumber(v);
                           if (rate != null && rate >= 0) {
@@ -184,45 +196,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                       ),
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.currency_exchange),
-                      title: const Text('Валюта'),
-                      subtitle: Text(profile.currency),
-                      trailing: const Icon(Icons.edit_outlined),
-                      onTap: () => _editText(
-                        title: 'Валюта',
-                        initial: profile.currency,
-                        numeric: false,
-                        onSave: (v) {
-                          if (v.isNotEmpty) {
-                            widget.store.updateProfile(
-                              profile.copyWith(currency: v),
-                            );
-                          }
-                        },
+                    _ChoiceTile<int>(
+                      icon: Icons.date_range_outlined,
+                      title: l.payPeriodLabel,
+                      selected: profile.periodStartDay,
+                      options: {
+                        // Подписи — диапазоны дат для текущего месяца.
+                        for (final day in Profile.periodStartDays)
+                          day: () {
+                            final example = PayPeriod(now.year, now.month, day);
+                            return dateRange(l, example.start, example.lastDay);
+                          }(),
+                      },
+                      onChanged: (day) => widget.store.updateProfile(
+                        profile.copyWith(periodStartDay: day),
                       ),
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.date_range_outlined),
-                      title: const Text('Расчётный период'),
-                      subtitle: Text(
-                        'с ${profile.periodStartDay} числа '
-                        'по ${profile.periodStartDay - 1 == 0 ? 'конец месяца' : '${profile.periodStartDay - 1} число следующего'}',
-                      ),
-                      trailing: const Icon(Icons.edit_outlined),
-                      onTap: () => _editText(
-                        title: 'Период начинается с числа',
-                        initial: '${profile.periodStartDay}',
-                        numeric: true,
-                        suffix: '(1–28)',
-                        onSave: (v) {
-                          final day = _parseNumber(v)?.round();
-                          if (day != null && day >= 1 && day <= 28) {
-                            widget.store.updateProfile(
-                              profile.copyWith(periodStartDay: day),
-                            );
-                          }
-                        },
+                    _ChoiceTile<String>(
+                      icon: Icons.language,
+                      title: l.languageLabel,
+                      selected: profile.language,
+                      // Названия языков — на самих языках.
+                      options: const {
+                        'en': 'English',
+                        'he': 'עברית',
+                        'ru': 'Русский',
+                      },
+                      onChanged: (language) => widget.store.updateProfile(
+                        profile.copyWith(language: language),
                       ),
                     ),
                   ],
@@ -230,16 +231,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               StepSwitcher(
-                title: periodTitle(period),
-                subtitle: _offset == 0 ? 'текущий период' : null,
+                title: periodTitle(l, period),
+                subtitle: _offset == 0 ? l.currentPeriod : null,
                 onPrevious: () => setState(() => _offset--),
                 onNext: () => setState(() => _offset++),
               ),
-              _ReportView(
-                report: report,
-                rate: profile.hourlyRate,
-                currency: profile.currency,
-              ),
+              _ReportView(report: report, rate: profile.hourlyRate),
               const SizedBox(height: 12),
               const _RulesCard(),
               const SizedBox(height: 12),
@@ -248,14 +245,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     ListTile(
                       leading: const Icon(Icons.upload_outlined),
-                      title: const Text('Сохранить резервную копию'),
-                      subtitle: const Text('Копирует все смены и настройки'),
+                      title: Text(l.backupSave),
+                      subtitle: Text(l.backupSaveSubtitle),
                       onTap: _export,
                     ),
                     ListTile(
                       leading: const Icon(Icons.download_outlined),
-                      title: const Text('Восстановить из копии'),
-                      subtitle: const Text('Заменяет текущие данные'),
+                      title: Text(l.backupRestore),
+                      subtitle: Text(l.backupRestoreSubtitle),
                       onTap: _import,
                     ),
                   ],
@@ -269,31 +266,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class _ReportView extends StatelessWidget {
-  const _ReportView({
-    required this.report,
-    required this.rate,
-    required this.currency,
+/// Пункт кабинета с выбором одного из нескольких вариантов.
+class _ChoiceTile<T> extends StatelessWidget {
+  const _ChoiceTile({
+    required this.icon,
+    required this.title,
+    required this.selected,
+    required this.options,
+    required this.onChanged,
   });
+
+  final IconData icon;
+  final String title;
+  final T selected;
+  final Map<T, String> options;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListTile(leading: Icon(icon), title: Text(title)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: SegmentedButton<T>(
+            showSelectedIcon: false,
+            segments: [
+              for (final MapEntry(:key, :value) in options.entries)
+                ButtonSegment(
+                  value: key,
+                  // Длинные подписи (например, на иврите) ужимаются.
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(value, maxLines: 1),
+                  ),
+                ),
+            ],
+            selected: {selected},
+            onSelectionChanged: (values) => onChanged(values.single),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReportView extends StatelessWidget {
+  const _ReportView({required this.report, required this.rate});
 
   final PeriodReport report;
   final double rate;
-  final String currency;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat('d MMM, EE', 'ru');
+    final l = AppLocalizations.of(context);
+    final dateFormat = DateFormat.MMMEd(l.localeName);
+    final weekFormat = DateFormat.MMMd(l.localeName);
 
     if (report.shifts.isEmpty) {
-      return const Card(
+      return Card(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Center(
-            child: Text(
-              'В этом периоде смен нет.\nЗаполните часы в календаре.',
-              textAlign: TextAlign.center,
-            ),
+            child: Text(l.noShiftsInPeriod, textAlign: TextAlign.center),
           ),
         ),
       );
@@ -309,24 +346,23 @@ class _ReportView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Зарплата за период (брутто)',
-                  style: theme.textTheme.labelLarge,
-                ),
+                Text(l.grossPay, style: theme.textTheme.labelLarge),
                 const SizedBox(height: 6),
                 Text(
                   rate > 0
-                      ? formatMoney(report.amount(rate), currency)
-                      : 'Укажите часовую ставку',
+                      ? formatMoney(l, report.amount(rate))
+                      : l.setHourlyRate,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${formatHours(report.totalHours)} отработано · '
-                  '${shiftsCount(report.shifts.length)} · '
-                  '${formatHours(report.weightedHours)} в пересчёте на 100%',
+                  l.reportSummary(
+                    formatHours(l, report.totalHours),
+                    l.shiftsCount(report.shifts.length),
+                    formatHours(l, report.weightedHours),
+                  ),
                   style: theme.textTheme.bodySmall,
                 ),
               ],
@@ -334,28 +370,28 @@ class _ReportView extends StatelessWidget {
           ),
         ),
         _Section(
-          title: 'Часы по процентам',
+          title: l.hoursByPercent,
           children: [
             for (final percent in report.percents)
               _row(
                 context,
-                formatPercent(percent),
-                formatHours(report.minutesByPercent[percent]! / 60),
+                formatPercent(l, percent),
+                formatHours(l, report.minutesByPercent[percent]! / 60),
                 rate > 0
                     ? formatMoney(
+                        l,
                         report.minutesByPercent[percent]! /
                             60 *
                             percent /
                             100 *
                             rate,
-                        currency,
                       )
                     : null,
               ),
           ],
         ),
         _Section(
-          title: 'Недели (норма 42 ч на 100%)',
+          title: l.weeksSection,
           children: [
             for (final w in report.weeks)
               Row(
@@ -372,19 +408,20 @@ class _ReportView extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${DateFormat('d MMM', 'ru').format(w.start)} – '
-                      '${DateFormat('d MMM', 'ru').format(w.start.add(const Duration(days: 6)))}',
+                      '${weekFormat.format(w.start)} – '
+                      '${weekFormat.format(w.start.add(const Duration(days: 6)))}',
                     ),
                   ),
                   Text(
-                    '${formatHours(w.baseMinutes > 2520 ? 42 : w.baseMinutes / 60)} / 42 ч',
+                    '${formatHours(l, w.baseMinutes > 2520 ? 42 : w.baseMinutes / 60)} / '
+                    '${formatHours(l, 42)}',
                   ),
                 ],
               ),
           ],
         ),
         _Section(
-          title: 'Смены',
+          title: l.shiftsSection,
           children: [
             for (final pay in report.shifts)
               Row(
@@ -403,7 +440,7 @@ class _ReportView extends StatelessWidget {
                         Text(
                           '${formatTime(pay.shift.startMinutes)}–'
                           '${formatTime(pay.shift.endMinutes)} · '
-                          '${pay.parts.map((p) => '${formatHours(p.hours)}×${formatPercent(p.percent)}').join(', ')}',
+                          '${pay.parts.map((p) => '${formatHours(l, p.hours)}×${formatPercent(l, p.percent)}').join(', ')}',
                           style: theme.textTheme.bodySmall,
                         ),
                       ],
@@ -413,10 +450,10 @@ class _ReportView extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(formatHours(pay.hours)),
+                      Text(formatHours(l, pay.hours)),
                       if (rate > 0)
                         Text(
-                          formatMoney(pay.amount(rate), currency),
+                          formatMoney(l, pay.amount(rate)),
                           style: theme.textTheme.bodySmall,
                         ),
                     ],
@@ -474,36 +511,15 @@ class _RulesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.bodySmall;
+    final l = AppLocalizations.of(context);
     return Card(
       child: ExpansionTile(
         leading: const Icon(Icons.rule),
-        title: const Text('Правила расчёта'),
+        title: Text(l.rulesTitle),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         shape: const Border(),
-        children: [
-          Text(
-            'Зарплата считается за расчётный период (по умолчанию с 20 числа '
-            'по 19 число следующего месяца). Неделя — с воскресенья по субботу. '
-            'Часы считаются от начала до конца смены, перерывы не вычитаются.\n\n'
-            'Утренняя смена (7:00–16:15, доп. часы до 19:15): '
-            '8,4 ч — 100%, 2 ч — 125%, дальше — 150%.\n\n'
-            'Утро+ (7:00–19:00) и Вечер (16:00–23:45) считаются по той же '
-            'таблице, что и утренняя смена.\n\n'
-            'Ночная смена (19:00–7:15): 3 ч — 100%, 4 ч — 142,5%, '
-            '2 ч — 178,1%, остальное — 213,7%.\n\n'
-            'Пятница (7:00–13:00, опция до 16:15): если норма 42 ч на 100% '
-            'за неделю выполнена — 2 ч по 125%, остальное по 150%. '
-            'Иначе — 100% до восполнения 42 ч, затем 125% и 150%.\n\n'
-            'Исход субботы: если норма выполнена — 7 ч по 142,5%, '
-            '2 ч по 178,1%, остальное до 7:15 по 213,7%. '
-            'Иначе — 100% до 22:00; после 22:00 до восполнения 42 ч — 142,5%; '
-            'после восполнения 2 ч по 178,1% и далее 213,7%.\n\n'
-            'В норму 42 ч засчитываются часы на 100% утренних и ночных смен '
-            'и часы пятницы/субботы, которыми норма восполняется.',
-            style: style,
-          ),
-        ],
+        children: [Text(l.rulesText, style: style)],
       ),
     );
   }

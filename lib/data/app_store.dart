@@ -8,47 +8,76 @@ import '../logic/pay_period.dart';
 import '../logic/period_report.dart';
 import '../models/shift.dart';
 
-/// Данные личного кабинета.
+/// Данные личного кабинета. Валюта всегда ₪.
 class Profile {
   const Profile({
     this.name = '',
     this.hourlyRate = 0,
-    this.currency = '₪',
-    this.periodStartDay = 20,
+    this.periodStartDay = defaultPeriodStartDay,
+    this.language = defaultLanguage,
   });
+
+  /// Варианты начала расчётного периода: календарный месяц или с 20 по 19.
+  static const periodStartDays = [1, 20];
+  static const defaultPeriodStartDay = 20;
+
+  static const languages = ['en', 'he', 'ru'];
+  static const defaultLanguage = 'en';
 
   final String name;
   final double hourlyRate;
-  final String currency;
 
-  /// С какого числа начинается расчётный период (1–28).
+  /// С какого числа начинается расчётный период: 1 или 20.
   final int periodStartDay;
+
+  /// Язык интерфейса: 'en', 'he' или 'ru'.
+  final String language;
 
   Profile copyWith({
     String? name,
     double? hourlyRate,
-    String? currency,
     int? periodStartDay,
+    String? language,
   }) => Profile(
     name: name ?? this.name,
     hourlyRate: hourlyRate ?? this.hourlyRate,
-    currency: currency ?? this.currency,
     periodStartDay: periodStartDay ?? this.periodStartDay,
+    language: language ?? this.language,
   );
 
   Map<String, Object> toJson() => {
     'name': name,
     'hourlyRate': hourlyRate,
-    'currency': currency,
     'periodStartDay': periodStartDay,
+    'language': language,
   };
 
-  factory Profile.fromJson(Map<String, dynamic> json) => Profile(
-    name: (json['name'] as String?) ?? '',
-    hourlyRate: ((json['hourlyRate'] as num?) ?? 0).toDouble(),
-    currency: (json['currency'] as String?) ?? '₪',
-    periodStartDay: (json['periodStartDay'] as int?) ?? 20,
-  );
+  /// Старое поле currency игнорируется; недопустимые значения
+  /// периода и языка заменяются значениями по умолчанию.
+  factory Profile.fromJson(Map<String, dynamic> json) {
+    final day = json['periodStartDay'];
+    final language = json['language'];
+    return Profile(
+      name: (json['name'] as String?) ?? '',
+      hourlyRate: ((json['hourlyRate'] as num?) ?? 0).toDouble(),
+      periodStartDay: periodStartDays.contains(day)
+          ? day as int
+          : defaultPeriodStartDay,
+      language: languages.contains(language)
+          ? language as String
+          : defaultLanguage,
+    );
+  }
+}
+
+/// Ошибка чтения резервной копии.
+class BackupFormatException extends FormatException {
+  const BackupFormatException(this.wrongApp, [String message = ''])
+    : super(message);
+
+  /// true — текст не является копией этого приложения;
+  /// false — данные повреждены.
+  final bool wrongApp;
 }
 
 /// Хранилище смен и профиля (локально на устройстве).
@@ -145,7 +174,8 @@ class AppStore extends ChangeNotifier {
   });
 
   /// Заменяет все данные данными из резервной копии.
-  /// Возвращает число загруженных смен; при неверных данных — FormatException.
+  /// Возвращает число загруженных смен; при неверных данных —
+  /// BackupFormatException.
   Future<int> importJson(String text) async {
     final Map<String, dynamic> data;
     final List<Shift> shifts;
@@ -153,17 +183,17 @@ class AppStore extends ChangeNotifier {
     try {
       data = jsonDecode(text) as Map<String, dynamic>;
       if (data['app'] != 'moya_zarplata_flex') {
-        throw const FormatException('это не резервная копия приложения');
+        throw const BackupFormatException(true, 'not a backup of this app');
       }
       shifts = [
         for (final item in data['shifts'] as List)
           Shift.fromJson(item as Map<String, dynamic>),
       ];
       profile = Profile.fromJson(data['profile'] as Map<String, dynamic>);
-    } on FormatException {
+    } on BackupFormatException {
       rethrow;
     } catch (e) {
-      throw FormatException('не удалось прочитать данные ($e)');
+      throw BackupFormatException(false, 'unreadable data ($e)');
     }
     _shifts
       ..clear()

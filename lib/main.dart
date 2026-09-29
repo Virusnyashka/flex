@@ -3,12 +3,16 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'data/app_store.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/profile_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('ru');
+  await Future.wait([
+    for (final language in Profile.languages)
+      initializeDateFormatting(language),
+  ]);
   final store = await AppStore.load();
   runApp(SalaryApp(store: store));
 }
@@ -21,19 +25,27 @@ class SalaryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const seed = Color(0xFF1F7A6D);
-    return MaterialApp(
-      title: 'Моя зарплата Flex',
-      debugShowCheckedModeBanner: false,
-      locale: const Locale('ru'),
-      supportedLocales: const [Locale('ru')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      theme: ThemeData(colorSchemeSeed: seed, useMaterial3: true),
-      darkTheme: ThemeData(
-        colorSchemeSeed: seed,
-        brightness: Brightness.dark,
-        useMaterial3: true,
+    // Язык берётся из профиля и меняется сразу после выбора в кабинете.
+    return ListenableBuilder(
+      listenable: store,
+      builder: (context, _) => MaterialApp(
+        // Название окна и вкладки не переводим — как у значка приложения.
+        title: 'Моя зарплата Flex',
+        debugShowCheckedModeBanner: false,
+        locale: Locale(store.profile.language),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        theme: ThemeData(colorSchemeSeed: seed, useMaterial3: true),
+        darkTheme: ThemeData(
+          colorSchemeSeed: seed,
+          brightness: Brightness.dark,
+          useMaterial3: true,
+        ),
+        home: HomePage(store: store),
       ),
-      home: HomePage(store: store),
     );
   }
 }
@@ -52,6 +64,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Scaffold(
       // На компьютере и планшете не растягиваем интерфейс на всю ширину.
       body: Center(
@@ -69,16 +82,16 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: 'Календарь',
+            icon: const Icon(Icons.calendar_month_outlined),
+            selectedIcon: const Icon(Icons.calendar_month),
+            label: l.tabCalendar,
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Кабинет',
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: const Icon(Icons.person),
+            label: l.tabProfile,
           ),
         ],
       ),

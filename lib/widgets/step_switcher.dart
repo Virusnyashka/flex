@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 /// Заголовок со стрелками «назад / вперёд» — для месяцев и периодов.
 class StepSwitcher extends StatelessWidget {
   const StepSwitcher({
@@ -18,10 +20,12 @@ class StepSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
+    // Иконки-шевроны сами зеркалятся в RTL (иврит).
     return Row(
       children: [
         IconButton(
-          tooltip: 'Назад',
+          tooltip: l.back,
           icon: const Icon(Icons.chevron_left),
           onPressed: onPrevious,
         ),
@@ -39,7 +43,7 @@ class StepSwitcher extends StatelessWidget {
           ),
         ),
         IconButton(
-          tooltip: 'Вперёд',
+          tooltip: l.forward,
           icon: const Icon(Icons.chevron_right),
           onPressed: onNext,
         ),

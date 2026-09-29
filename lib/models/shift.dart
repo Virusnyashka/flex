@@ -1,4 +1,5 @@
 /// Тип смены — определяет, по какой таблице считается оплата.
+/// Названия смен — в локализации (см. shiftTitle в widgets/format.dart).
 enum ShiftType {
   morning,
   morningPlus,
@@ -6,24 +7,6 @@ enum ShiftType {
   night,
   friday,
   saturdayNight;
-
-  String get title => switch (this) {
-    ShiftType.morning => 'Утренняя смена',
-    ShiftType.morningPlus => 'Утро+',
-    ShiftType.evening => 'Вечер',
-    ShiftType.night => 'Ночная смена',
-    ShiftType.friday => 'Пятница',
-    ShiftType.saturdayNight => 'Исход субботы',
-  };
-
-  String get shortTitle => switch (this) {
-    ShiftType.morning => 'Утро',
-    ShiftType.morningPlus => 'Утро+',
-    ShiftType.evening => 'Вечер',
-    ShiftType.night => 'Ночь',
-    ShiftType.friday => 'Пятница',
-    ShiftType.saturdayNight => 'Исход сб.',
-  };
 
   /// Тип смены по умолчанию для дня недели (неделя — с воскресенья).
   static ShiftType defaultFor(DateTime date) => switch (date.weekday) {

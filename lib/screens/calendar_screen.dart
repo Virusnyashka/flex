@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/app_store.dart';
+import '../l10n/app_localizations.dart';
 import '../logic/pay_calculator.dart';
 import '../logic/pay_period.dart';
 import '../models/shift.dart';
@@ -19,8 +20,6 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  static const _weekdays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-
   late DateTime _month;
 
   @override
@@ -36,24 +35,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
+    final weekdays = weekdayNames(l);
     return Scaffold(
-      appBar: AppBar(title: const Text('Моя зарплата Flex')),
+      appBar: AppBar(title: Text(l.appTitle)),
       body: ListenableBuilder(
         listenable: widget.store,
         builder: (context, _) {
           final store = widget.store;
           final profile = store.profile;
           final current = store.periodContaining(DateTime.now());
-          // Два расчётных периода, которые попадают на этот месяц.
+          // Расчётные периоды, которые попадают на этот месяц:
+          // один, если период — календарный месяц, иначе два.
           final periods = [
-            store.periodStartingIn(_month.year, _month.month - 1),
+            if (profile.periodStartDay != 1)
+              store.periodStartingIn(_month.year, _month.month - 1),
             store.periodStartingIn(_month.year, _month.month),
           ];
           return ListView(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
             children: [
               StepSwitcher(
-                title: monthTitle(_month.year, _month.month),
+                title: monthTitle(l, _month.year, _month.month),
                 onPrevious: () => setState(
                   () => _month = DateTime(_month.year, _month.month - 1),
                 ),
@@ -67,7 +70,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     Expanded(
                       child: Center(
                         child: Text(
-                          _weekdays[i],
+                          weekdays[i],
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: i >= 5
                                 ? theme.colorScheme.primary
@@ -98,13 +101,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Text(t.shortTitle, style: theme.textTheme.bodySmall),
+                        Text(
+                          shiftShortTitle(l, t),
+                          style: theme.textTheme.bodySmall,
+                        ),
                       ],
                     ),
                 ],
               ),
               const SizedBox(height: 16),
-              Text('Расчётные периоды', style: theme.textTheme.titleSmall),
+              Text(l.payPeriods, style: theme.textTheme.titleSmall),
               const SizedBox(height: 4),
               for (final period in periods)
                 _PeriodTile(
@@ -113,10 +119,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   hours: store.report(period).totalHours,
                   amount: profile.hourlyRate > 0
                       ? formatMoney(
+                          l,
                           store.report(period).amount(profile.hourlyRate),
-                          profile.currency,
                         )
-                      : 'укажите ставку',
+                      : l.setRateShort,
                 ),
             ],
           );
@@ -210,7 +216,7 @@ class _DayCell extends StatelessWidget {
                 const SizedBox(height: 2),
                 FittedBox(
                   child: Text(
-                    formatHours(pay!.hours),
+                    formatHours(AppLocalizations.of(context), pay!.hours),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: color,
                       fontWeight: FontWeight.w700,
@@ -242,14 +248,15 @@ class _PeriodTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     return Card(
       color: isCurrent ? theme.colorScheme.primaryContainer : null,
       child: ListTile(
-        title: Text(periodTitle(period)),
+        title: Text(periodTitle(l, period)),
         subtitle: Text(
           isCurrent
-              ? 'Текущий период · ${formatHours(hours)}'
-              : formatHours(hours),
+              ? l.currentPeriodHours(formatHours(l, hours))
+              : formatHours(l, hours),
         ),
         trailing: Text(amount, style: theme.textTheme.titleMedium),
       ),

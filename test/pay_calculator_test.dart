@@ -147,6 +147,18 @@ void main() {
     expect(jan.lastDay, DateTime(2027, 1, 19));
   });
 
+  test('расчётный период с 1 числа — календарный месяц', () {
+    final p = PayPeriod.containing(DateTime(2026, 9, 29), 1);
+    expect(p.start, DateTime(2026, 9, 1));
+    expect(p.lastDay, DateTime(2026, 9, 30));
+    expect(PayPeriod.containing(DateTime(2026, 9, 1), 1), p);
+    expect(PayPeriod.containing(DateTime(2026, 10, 1), 1), p.next);
+    expect(PayPeriod(2027, 2, 1).lastDay, DateTime(2027, 2, 28));
+    final dec = PayPeriod(2026, 12, 1);
+    expect(dec.lastDay, DateTime(2026, 12, 31));
+    expect(dec.next.start, DateTime(2027, 1, 1));
+  });
+
   test('отчёт берёт смены периода, а норму недели — по всей неделе', () {
     // Неделя 18–24 октября 2026 пересекает начало периода 20 октября.
     Shift at(int d, ShiftType type, int start, int end) => Shift(

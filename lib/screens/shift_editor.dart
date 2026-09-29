@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/app_store.dart';
+import '../l10n/app_localizations.dart';
 import '../logic/pay_calculator.dart';
 import '../models/shift.dart';
 import '../widgets/format.dart';
@@ -78,9 +79,12 @@ class _ShiftEditorState extends State<ShiftEditor> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final profile = widget.store.profile;
     final pay = widget.store.preview(_shift);
-    final title = capitalize(DateFormat.MMMMEEEEd('ru').format(widget.day));
+    final title = capitalize(
+      DateFormat.MMMMEEEEd(l.localeName).format(widget.day),
+    );
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -103,7 +107,7 @@ class _ShiftEditorState extends State<ShiftEditor> {
                 for (final t in ShiftType.values)
                   ChoiceChip(
                     avatar: Icon(shiftIcon(t), size: 18, color: shiftColor(t)),
-                    label: Text(t.title),
+                    label: Text(shiftTitle(l, t)),
                     selected: _shift.type == t,
                     onSelected: (_) => _setType(t),
                   ),
@@ -114,7 +118,7 @@ class _ShiftEditorState extends State<ShiftEditor> {
               children: [
                 Expanded(
                   child: _TimeField(
-                    label: 'Начало',
+                    label: l.startLabel,
                     value: formatTime(_shift.startMinutes),
                     onTap: () => _pickTime(start: true),
                   ),
@@ -123,8 +127,8 @@ class _ShiftEditorState extends State<ShiftEditor> {
                 Expanded(
                   child: _TimeField(
                     label: _shift.endMinutes <= _shift.startMinutes
-                        ? 'Конец (след. день)'
-                        : 'Конец',
+                        ? l.endNextDayLabel
+                        : l.endLabel,
                     value: formatTime(_shift.endMinutes),
                     onTap: () => _pickTime(start: false),
                   ),
@@ -132,11 +136,7 @@ class _ShiftEditorState extends State<ShiftEditor> {
               ],
             ),
             const SizedBox(height: 16),
-            _PayPreview(
-              pay: pay,
-              rate: profile.hourlyRate,
-              currency: profile.currency,
-            ),
+            _PayPreview(pay: pay, rate: profile.hourlyRate),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -144,7 +144,7 @@ class _ShiftEditorState extends State<ShiftEditor> {
                   TextButton.icon(
                     onPressed: _delete,
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Удалить'),
+                    label: Text(l.delete),
                     style: TextButton.styleFrom(
                       foregroundColor: theme.colorScheme.error,
                     ),
@@ -153,7 +153,7 @@ class _ShiftEditorState extends State<ShiftEditor> {
                 FilledButton.icon(
                   onPressed: _save,
                   icon: const Icon(Icons.check),
-                  label: const Text('Сохранить'),
+                  label: Text(l.save),
                 ),
               ],
             ),
@@ -193,19 +193,15 @@ class _TimeField extends StatelessWidget {
 }
 
 class _PayPreview extends StatelessWidget {
-  const _PayPreview({
-    required this.pay,
-    required this.rate,
-    required this.currency,
-  });
+  const _PayPreview({required this.pay, required this.rate});
 
   final ShiftPay pay;
   final double rate;
-  final String currency;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final base = pay.baseMinutesAfter / 60;
     return Card.filled(
       child: Padding(
@@ -215,10 +211,10 @@ class _PayPreview extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text('Оплачиваемых часов', style: theme.textTheme.bodyMedium),
+                Text(l.paidHours, style: theme.textTheme.bodyMedium),
                 const Spacer(),
                 Text(
-                  formatHours(pay.hours),
+                  formatHours(l, pay.hours),
                   style: theme.textTheme.titleMedium,
                 ),
               ],
@@ -229,16 +225,16 @@ class _PayPreview extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Row(
                   children: [
-                    Text(formatHours(part.hours)),
+                    Text(formatHours(l, part.hours)),
                     Text(
-                      '  × ${formatPercent(part.percent)}',
+                      '  × ${formatPercent(l, part.percent)}',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const Spacer(),
                     if (rate > 0)
-                      Text(formatMoney(part.weightedHours * rate, currency)),
+                      Text(formatMoney(l, part.weightedHours * rate)),
                   ],
                 ),
               ),
@@ -246,10 +242,10 @@ class _PayPreview extends StatelessWidget {
               const Divider(),
               Row(
                 children: [
-                  Text('За смену', style: theme.textTheme.titleSmall),
+                  Text(l.forShift, style: theme.textTheme.titleSmall),
                   const Spacer(),
                   Text(
-                    formatMoney(pay.amount(rate), currency),
+                    formatMoney(l, pay.amount(rate)),
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: theme.colorScheme.primary,
                     ),
@@ -259,7 +255,10 @@ class _PayPreview extends StatelessWidget {
             ],
             const SizedBox(height: 8),
             Text(
-              'Норма недели на 100%: ${formatHours(base > 42 ? 42 : base)} из 42 ч',
+              l.weekNorm(
+                formatHours(l, base > 42 ? 42 : base),
+                formatHours(l, 42),
+              ),
               style: theme.textTheme.bodySmall,
             ),
           ],

@@ -1,0 +1,103 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "My Salary Flex",
+  "tabCalendar": "Calendar",
+  "tabProfile": "Account",
+  "back": "Back",
+  "forward": "Forward",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "gotIt": "Got it",
+
+  "shiftMorning": "Morning shift",
+  "shiftMorningPlus": "Morning+",
+  "shiftEvening": "Evening",
+  "shiftNight": "Night shift",
+  "shiftFriday": "Friday",
+  "shiftSaturdayNight": "Saturday night (Motzei Shabbat)",
+  "shiftMorningShort": "Morning",
+  "shiftMorningPlusShort": "Morning+",
+  "shiftEveningShort": "Evening",
+  "shiftNightShort": "Night",
+  "shiftFridayShort": "Friday",
+  "shiftSaturdayNightShort": "Sat. night",
+
+  "weekdaysShort": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
+  "@weekdaysShort": {
+    "description": "Short weekday names from Sunday to Saturday, separated by commas."
+  },
+
+  "hoursValue": "{hours} h",
+  "@hoursValue": {
+    "placeholders": {"hours": {"type": "String"}}
+  },
+  "shiftsCount": "{count, plural, =1{1 shift} other{{count} shifts}}",
+  "@shiftsCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+
+  "payPeriods": "Pay periods",
+  "currentPeriodHours": "Current period · {hours}",
+  "@currentPeriodHours": {
+    "placeholders": {"hours": {"type": "String"}}
+  },
+  "setRateShort": "set your rate",
+
+  "profileTitle": "My account",
+  "nameLabel": "Name",
+  "notSpecified": "not specified",
+  "hourlyRateLabel": "Hourly rate (100%)",
+  "hourlyRateDialogTitle": "Hourly rate",
+  "rateNotSet": "not set — tap to set",
+  "payPeriodLabel": "Pay period",
+  "languageLabel": "Language",
+  "currentPeriod": "current period",
+
+  "backupSave": "Save a backup",
+  "backupSaveSubtitle": "Copies all shifts and settings",
+  "backupRestore": "Restore from backup",
+  "backupRestoreSubtitle": "Replaces the current data",
+  "backupCopiedTitle": "Backup copied",
+  "backupCopiedBody": "The data has been copied to the clipboard. Paste it into Notes or send it to yourself in a message so you don't lose it.",
+  "restoreHint": "Paste the backup text here",
+  "restoreAction": "Restore",
+  "restoredCount": "Restored: {shifts}",
+  "@restoredCount": {
+    "placeholders": {"shifts": {"type": "String"}}
+  },
+  "restoreFailedWrongApp": "Couldn't restore: this is not a backup of this app",
+  "restoreFailedUnreadable": "Couldn't restore: the data can't be read",
+
+  "noShiftsInPeriod": "No shifts in this period.\nFill in your hours in the calendar.",
+  "grossPay": "Pay for the period (gross)",
+  "setHourlyRate": "Set your hourly rate",
+  "reportSummary": "{worked} worked · {shifts} · {weighted} at 100% equivalent",
+  "@reportSummary": {
+    "placeholders": {
+      "worked": {"type": "String"},
+      "shifts": {"type": "String"},
+      "weighted": {"type": "String"}
+    }
+  },
+  "hoursByPercent": "Hours by rate",
+  "weeksSection": "Weeks (norm: 42 h at 100%)",
+  "shiftsSection": "Shifts",
+
+  "startLabel": "Start",
+  "endLabel": "End",
+  "endNextDayLabel": "End (next day)",
+  "paidHours": "Paid hours",
+  "forShift": "For the shift",
+  "weekNorm": "Weekly norm at 100%: {hours} of {norm}",
+  "@weekNorm": {
+    "placeholders": {
+      "hours": {"type": "String"},
+      "norm": {"type": "String"}
+    }
+  },
+
+  "rulesTitle": "Calculation rules",
+  "rulesText": "Pay is calculated for a pay period: either a calendar month (from the 1st to the last day) or from the 20th to the 19th of the next month — choose it above under “Pay period”. The week runs from Sunday to Saturday. Hours are counted from the start to the end of a shift; breaks are not deducted.\n\nMorning shift (7:00–16:15, extra hours until 19:15): 8.4 h at 100%, 2 h at 125%, then 150%.\n\nMorning+ (7:00–19:00) and Evening (16:00–23:45) are calculated with the same table as the morning shift.\n\nNight shift (19:00–7:15): 3 h at 100%, 4 h at 142.5%, 2 h at 178.1%, the rest at 213.7%.\n\nFriday (7:00–13:00, optionally until 16:15): if the weekly norm of 42 h at 100% has been reached — 2 h at 125%, the rest at 150%. Otherwise — 100% until the 42 h are made up, then 125% and 150%.\n\nSaturday night (Motzei Shabbat): if the norm has been reached — 7 h at 142.5%, 2 h at 178.1%, the rest until 7:15 at 213.7%. Otherwise — 100% until 22:00; after 22:00, 142.5% until the 42 h are made up; after that, 2 h at 178.1% and then 213.7%.\n\nThe 42 h norm counts the 100% hours of morning and night shifts and the Friday/Saturday night hours that make up the norm."
+}
